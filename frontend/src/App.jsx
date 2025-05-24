@@ -1,6 +1,6 @@
-import React, { use, useEffect } from 'react'
+import React, { useEffect } from 'react'
 import Navbar from './components/Navbar'
-import { Navigate } from 'react-router-dom';
+import { Navigate, useLocation } from 'react-router-dom';
 
 import HomePage from "./pages/HomePage";
 import SignUpPage from "./pages/SignUpPage";
@@ -8,7 +8,7 @@ import LoginPage from "./pages/LoginPage";
 import SettingsPage from "./pages/SettingsPage";
 import ProfilePage from "./pages/ProfilePage";
 
-import { Routes , Route} from 'react-router-dom'
+import { Routes, Route } from 'react-router-dom'
 import { useAuthStore } from './store/useAuthStore';
 
 import { Loader } from "lucide-react";
@@ -16,40 +16,37 @@ import { Toaster } from "react-hot-toast";
 
 
 const App = () => {
+  const location = useLocation();
+  const { authUser, checkAuth, isCheckingAuth } = useAuthStore();
 
-  const { authUser, checkAuth, isCheckingAuth } = useAuthStore()
-
-   useEffect(() => {
-    checkAuth()
+  useEffect(() => {
+    checkAuth();
   }, [checkAuth]);
 
-  console.log({authUser});
-
-     if (isCheckingAuth && authUser) {
-      return (
-       <div className="flex items-center justify-center h-screen bg-gray-900">
-         <div className="relative">
-        <div className="absolute inset-0 rounded-full bg-white blur-md opacity-30 animate-pulse"></div>
-        <Loader className="size-10 animate-spin text-white drop-shadow-[0_0_8px_rgba(255,255,255,0.8)]" />
+  if (isCheckingAuth) {
+    return (
+      <div className="flex items-center justify-center h-screen bg-gray-900">
+        <div className="relative">
+          <div className="absolute inset-0 rounded-full bg-white blur-md opacity-30 animate-pulse"></div>
+          <Loader className="size-10 animate-spin text-white drop-shadow-[0_0_8px_rgba(255,255,255,0.8)]" />
+        </div>
       </div>
-    </div>
-     )
-    };
+    );
+  }
 
-    
-   return (
+  return (
     <div>
-     <Navbar />
+      <Navbar />
 
-     <Routes>
-        <Route path="/" element={authUser ? <HomePage /> : <Navigate to="/login" />} />
-        <Route path="/signup" element={!authUser ? <SignUpPage /> : <Navigate to="/" />} />
-        <Route path="/login" element={!authUser ? <LoginPage /> : <Navigate to="/" />} />
-        <Route path="/settings" element={<SettingsPage />} />
-        <Route path="/profile" element={authUser ? <ProfilePage /> : <Navigate to="/login" />} />
+      <Routes>
+        <Route path="/" element={authUser ? <HomePage /> : <Navigate to="/login" state={{ from: location }} replace />} />
+        <Route path="/signup" element={!authUser ? <SignUpPage /> : <Navigate to="/" replace />} />
+        <Route path="/login" element={!authUser ? <LoginPage /> : <Navigate to="/" replace />} />
+        <Route path="/settings" element={authUser ? <SettingsPage /> : <Navigate to="/login" state={{ from: location }} replace />} />
+        <Route path="/profile" element={authUser ? <ProfilePage /> : <Navigate to="/login" state={{ from: location }} replace />} />
       </Routes>
 
-        <Toaster />
+      <Toaster />
     </div>
   );
 };
