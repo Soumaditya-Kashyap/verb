@@ -19,10 +19,11 @@ import { Toaster } from "react-hot-toast";
 
 const App = () => {
   const location = useLocation();
-  const { authUser, checkAuth, isCheckingAuth } = useAuthStore();
+  const { authUser, checkAuth, isCheckingAuth, onlineUsers } = useAuthStore();
   const { theme } = useThemeStore();
 
-
+  console.log({ onlineUsers });
+  
   useEffect(() => {
     checkAuth();
   }, [checkAuth]);
