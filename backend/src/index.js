@@ -22,7 +22,7 @@ app.use(cors({
 app.use("/api/auth", authRoutes)
 app.use("/api/messages", messageRoutes)
 
-app.listen(PORT, ()=>{
+server.listen(PORT, ()=>{
     console.log("server started on PORT:", PORT);
     connectDB();
 })
