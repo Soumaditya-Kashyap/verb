@@ -7,83 +7,18 @@ import { Eye, EyeOff, Loader2, Lock, Mail, MessageSquare } from "lucide-react";
 import toast, { Toaster } from "react-hot-toast";
 
 const LoginPage = () => {
-  const navigate = useNavigate();
   const [showPassword, setShowPassword] = useState(false);
   const [formData, setFormData] = useState({
     email: "",
     password: "",
   });
-
   const { login, isLoggingIn } = useAuthStore();
-
-  const validateForm = () => {
-    if (!formData.email.trim()) {
-      toast.error("Email is required", {
-        position: "top-center",
-        style: {
-          background: "#1e293b",
-          color: "#f8fafc",
-          border: "1px solid #334155",
-        },
-      });
-      return false;
-    }
-
-    if (!/\S+@\S+\.\S+/.test(formData.email)) {
-      toast.error("Please enter a valid email address", {
-        position: "top-center",
-        style: {
-          background: "#1e293b",
-          color: "#f8fafc",
-          border: "1px solid #334155",
-        },
-      });
-      return false;
-    }
-
-    if (!formData.password) {
-      toast.error("Password is required", {
-        position: "top-center",
-        style: {
-          background: "#1e293b",
-          color: "#f8fafc",
-          border: "1px solid #334155",
-        },
-      });
-      return false;
-    }
-
-    return true;
-  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
-    if (!validateForm()) return;
-
-    try {
-      await login(formData);
-      toast.success("Logged in successfully", {
-        position: "top-center",
-        style: {
-          background: "#064e3b",
-          color: "#ecfdf5",
-          border: "1px solid #047857",
-        },
-      });
-      setTimeout(() => navigate("/"), 1500);
-    } catch (error) {
-      const errorMessage = error?.response?.data?.message || "Invalid credentials";
-      toast.error(errorMessage, {
-        position: "top-center",
-        style: {
-          background: "#7f1d1d",
-          color: "#fee2e2",
-          border: "1px solid #b91c1c",
-        },
-      });
-    }
+    login(formData);
   };
+
 
   return (
     <div className="h-screen grid lg:grid-cols-2">
