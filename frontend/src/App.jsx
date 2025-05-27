@@ -30,16 +30,22 @@ const App = () => {
 
   console.log({ authUser});
 
-  if (isCheckingAuth) {
-    return (
-      <div className="flex items-center justify-center h-screen bg-gray-900">
-        <div className="relative">
-          <div className="absolute inset-0 rounded-full bg-white blur-md opacity-30 animate-pulse"></div>
-          <Loader className="size-10 animate-spin text-white drop-shadow-[0_0_8px_rgba(255,255,255,0.8)]" />
-        </div>
+if (isCheckingAuth) {
+  return (
+    <div className="flex items-center justify-center h-screen bg-gray-900">
+      <div className="relative flex items-center justify-center">
+        {/* Glowing background with gradient and smoother pulse */}
+        <div className="absolute inset-0 rounded-full bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 blur-xl opacity-40 animate-pulse-smooth"></div>
+        {/* Secondary subtle ring effect */}
+        <div className="absolute inset-0 rounded-full bg-white blur-lg opacity-20 animate-pulse-delayed"></div>
+        {/* Loader icon with bounce and spin */}
+        <Loader
+          className="size-12 animate-spin-bounce text-white drop-shadow-[0_0_12px_rgba(255,255,255,0.9)]"
+        />
       </div>
-    );
-  }
+    </div>
+  );
+}
 
   return (
    <div data-theme={theme}>
