@@ -5,312 +5,264 @@ const AuthImagePattern = ({ title, subtitle }) => {
 
   useEffect(() => {
     const canvas = canvasRef.current;
-    if (!canvas) return;
-    
     const ctx = canvas.getContext('2d');
     let animationId;
     let time = 0;
 
     const resizeCanvas = () => {
-      const rect = canvas.getBoundingClientRect();
-      canvas.width = rect.width;
-      canvas.height = rect.height;
+      canvas.width = canvas.offsetWidth * window.devicePixelRatio;
+      canvas.height = canvas.offsetHeight * window.devicePixelRatio;
+      ctx.scale(window.devicePixelRatio, window.devicePixelRatio);
     };
 
-    // Initialize particles after canvas sizing
-    let particles = [];
-    
-    const initParticles = () => {
-      particles = Array.from({ length: 50 }, () => ({
-        x: Math.random() * canvas.width,
-        y: Math.random() * canvas.height,
-        speed: 0.3 + Math.random() * 0.7,
-        angle: Math.random() * Math.PI * 2,
-        size: 1 + Math.random() * 2.5,
-        opacity: 0.4 + Math.random() * 0.6,
-        pulsePhase: Math.random() * Math.PI * 2,
-        color: Math.random() > 0.5 ? 'cyan' : 'purple'
-      }));
-    };
+    // Minimal starfield
+    const stars = Array.from({ length: 80 }, () => ({
+      x: Math.random() * canvas.offsetWidth,
+      y: Math.random() * canvas.offsetHeight,
+      size: 0.5 + Math.random() * 1.5,
+      opacity: 0.3 + Math.random() * 0.5,
+      color: `hsl(${180 + Math.random() * 60}, 80%, 70%)`,
+      twinklePhase: Math.random() * Math.PI * 2,
+    }));
+
+    // Aurora waves
+    const auroras = Array.from({ length: 3 }, () => ({
+      x: Math.random() * canvas.offsetWidth,
+      y: canvas.offsetHeight * (0.3 + Math.random() * 0.4),
+      width: 200 + Math.random() * 300,
+      height: 100 + Math.random() * 150,
+      color: `hsla(${180 + Math.random() * 60}, 70%, 50%, 0.2)`,
+      phase: Math.random() * Math.PI * 2,
+      speed: 0.01 + Math.random() * 0.02,
+    }));
 
     const animate = () => {
-      if (!canvas.width || !canvas.height) return;
-      
-      time += 0.015;
-      
-      // Clear with subtle fade effect
-      ctx.fillStyle = 'rgba(15, 23, 42, 0.08)';
-      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      time += 0.016;
+      ctx.fillStyle = 'rgba(10, 15, 30, 0.1)';
+      ctx.fillRect(0, 0, canvas.offsetWidth, canvas.offsetHeight);
 
-      // Draw elegant connecting lines
-      ctx.lineWidth = 1;
-      particles.forEach((p1, i) => {
-        particles.slice(i + 1, i + 3).forEach(p2 => {
-          const dx = p1.x - p2.x;
-          const dy = p1.y - p2.y;
-          const dist = Math.sqrt(dx * dx + dy * dy);
-          if (dist < 120) {
-            const opacity = ((120 - dist) / 120) * 0.4;
-            const gradient = ctx.createLinearGradient(p1.x, p1.y, p2.x, p2.y);
-            gradient.addColorStop(0, p1.color === 'cyan' ? `rgba(34, 211, 238, ${opacity})` : `rgba(139, 92, 246, ${opacity})`);
-            gradient.addColorStop(1, p2.color === 'cyan' ? `rgba(34, 211, 238, ${opacity})` : `rgba(139, 92, 246, ${opacity})`);
-            
-            ctx.strokeStyle = gradient;
-            ctx.beginPath();
-            ctx.moveTo(p1.x, p1.y);
-            ctx.lineTo(p2.x, p2.y);
-            ctx.stroke();
-          }
-        });
+      // Draw aurora waves
+      auroras.forEach(aurora => {
+        const gradient = ctx.createLinearGradient(
+          aurora.x, aurora.y - aurora.height,
+          aurora.x, aurora.y + aurora.height
+        );
+        gradient.addColorStop(0, 'transparent');
+        gradient.addColorStop(0.5, aurora.color);
+        gradient.addColorStop(1, 'transparent');
+
+        ctx.beginPath();
+        ctx.moveTo(aurora.x - aurora.width / 2, aurora.y);
+        for (let i = -aurora.width / 2; i <= aurora.width / 2; i += 10) {
+          const x = aurora.x + i;
+          const y = aurora.y + Math.sin(i * 0.02 + time * aurora.speed + aurora.phase) * aurora.height * 0.3;
+          ctx.lineTo(x, y);
+        }
+        ctx.lineTo(aurora.x + aurora.width / 2, aurora.y);
+        ctx.closePath();
+        ctx.fillStyle = gradient;
+        ctx.fill();
+        ctx.shadowColor = aurora.color.replace('0.2', '0.3');
+        ctx.shadowBlur = 15;
+        ctx.fill();
+        ctx.shadowBlur = 0;
       });
 
-      // Update and draw particles with enhanced effects
-      particles.forEach(particle => {
-        // Smooth movement
-        particle.x += Math.cos(particle.angle) * particle.speed;
-        particle.y += Math.sin(particle.angle) * particle.speed;
-        particle.angle += 0.003;
-
-        // Boundary wrapping
-        if (particle.x < -10) particle.x = canvas.width + 10;
-        if (particle.x > canvas.width + 10) particle.x = -10;
-        if (particle.y < -10) particle.y = canvas.height + 10;
-        if (particle.y > canvas.height + 10) particle.y = -10;
-
-        // Dynamic pulsing
-        const pulse = Math.sin(time * 1.5 + particle.pulsePhase) * 0.4 + 0.8;
-        const glowPulse = Math.sin(time * 2 + particle.pulsePhase) * 0.3 + 0.7;
-        
-        // Glow effect
-        const glowSize = particle.size * pulse * 3;
-        const glowGradient = ctx.createRadialGradient(
-          particle.x, particle.y, 0,
-          particle.x, particle.y, glowSize
-        );
-        
-        if (particle.color === 'cyan') {
-          glowGradient.addColorStop(0, `rgba(34, 211, 238, ${particle.opacity * glowPulse * 0.3})`);
-          glowGradient.addColorStop(1, 'rgba(34, 211, 238, 0)');
-        } else {
-          glowGradient.addColorStop(0, `rgba(139, 92, 246, ${particle.opacity * glowPulse * 0.3})`);
-          glowGradient.addColorStop(1, 'rgba(139, 92, 246, 0)');
-        }
-        
-        ctx.fillStyle = glowGradient;
+      // Draw stars with twinkle
+      stars.forEach(star => {
+        const twinkle = Math.sin(time * 2 + star.twinklePhase) * 0.2 + 0.8;
         ctx.beginPath();
-        ctx.arc(particle.x, particle.y, glowSize, 0, Math.PI * 2);
+        ctx.arc(star.x, star.y, star.size * twinkle, 0, Math.PI * 2);
+        ctx.fillStyle = star.color.replace('70%', `${70 * twinkle}%`);
+        ctx.globalAlpha = star.opacity * twinkle;
         ctx.fill();
-        
-        // Core particle
-        ctx.beginPath();
-        ctx.arc(particle.x, particle.y, particle.size * pulse, 0, Math.PI * 2);
-        ctx.fillStyle = particle.color === 'cyan' 
-          ? `rgba(34, 211, 238, ${particle.opacity * pulse})` 
-          : `rgba(139, 92, 246, ${particle.opacity * pulse})`;
+        ctx.globalAlpha = 1;
+        ctx.shadowColor = star.color;
+        ctx.shadowBlur = 5;
         ctx.fill();
+        ctx.shadowBlur = 0;
       });
 
       animationId = requestAnimationFrame(animate);
     };
 
     resizeCanvas();
-    initParticles();
     animate();
 
-    const handleResize = () => {
-      resizeCanvas();
-      initParticles();
-    };
-
-    window.addEventListener('resize', handleResize);
+    window.addEventListener('resize', resizeCanvas);
 
     return () => {
       cancelAnimationFrame(animationId);
-      window.removeEventListener('resize', handleResize);
+      window.removeEventListener('resize', resizeCanvas);
     };
   }, []);
 
   return (
-    <div className="flex-1 relative overflow-hidden min-h-screen bg-gradient-to-br from-slate-900 via-indigo-900 to-slate-900">
-      {/* Enhanced Animated Canvas Background */}
+    <div className="lg:flex items-center justify-center relative overflow-hidden min-h-screen bg-gradient-to-br from-slate-950 via-indigo-950 to-purple-950">
+      {/* Animated Canvas Background */}
       <canvas
         ref={canvasRef}
         className="absolute inset-0 w-full h-full"
         style={{ background: 'transparent' }}
       />
 
-      {/* Sophisticated Floating Elements */}
-      <div className="absolute inset-0 pointer-events-none overflow-hidden">
-        {[...Array(12)].map((_, i) => (
+      {/* Orbital Paths */}
+      <div className="absolute inset-0 pointer-events-none">
+        {[...Array(3)].map((_, i) => (
           <div
-            key={`element-${i}`}
-            className="absolute"
+            key={`orbit-${i}`}
+            className="absolute rounded-full border border-cyan-400/20"
             style={{
-              left: `${5 + (i * 8) % 90}%`,
-              top: `${10 + (i * 7) % 80}%`,
-              animation: `float-element ${12 + i * 1.5}s ease-in-out infinite`,
-              animationDelay: `${i * 0.8}s`,
+              width: `${200 + i * 100}px`,
+              height: `${100 + i * 50}px`,
+              top: `${30 + i * 15}%`,
+              left: `${10 + i * 20}%`,
+              animation: `orbit-spin ${8 + i * 2}s linear infinite`,
+              animationDelay: `${i * 1}s`,
+              transform: 'translate(-50%, -50%) rotateX(60deg)',
+              boxShadow: '0 0 10px rgba(6, 182, 212, 0.3)',
             }}
           >
-            {i % 4 === 0 && (
-              <div className="w-20 h-20 border-2 border-cyan-400/20 rounded-full relative">
-                <div className="absolute inset-2 border border-cyan-400/30 rounded-full animate-pulse" style={{ animationDuration: `${2 + i * 0.3}s` }}></div>
-              </div>
-            )}
-            {i % 4 === 1 && (
-              <div className="w-16 h-16 border-2 border-purple-400/20 transform rotate-45 relative">
-                <div className="absolute inset-1 bg-purple-400/10 animate-pulse" style={{ animationDuration: `${3 + i * 0.2}s` }}></div>
-              </div>
-            )}
-            {i % 4 === 2 && (
-              <div className="w-24 h-2 bg-gradient-to-r from-transparent via-cyan-400/30 to-transparent rounded-full"
-                   style={{ animation: `glow-line ${5 + i * 0.5}s ease-in-out infinite` }}></div>
-            )}
-            {i % 4 === 3 && (
-              <div className="relative">
-                <div className="w-12 h-12 bg-gradient-to-br from-purple-400/20 to-cyan-400/20 rounded-full animate-spin" style={{ animationDuration: `${8 + i}s` }}></div>
-                <div className="absolute inset-2 bg-slate-900 rounded-full"></div>
-              </div>
-            )}
+            <div
+              className="absolute w-4 h-4 rounded-full bg-gradient-to-r from-cyan-400 to-teal-500"
+              style={{
+                top: '50%',
+                left: '0%',
+                transform: 'translate(-50%, -50%)',
+                animation: `orbit-move ${8 + i * 2}s linear infinite reverse`,
+                boxShadow: '0 0 12px rgba(6, 182, 212, 0.5)',
+              }}
+            />
           </div>
         ))}
       </div>
 
-      {/* Premium Ambient Lighting */}
+      {/* Glowing Cosmic Nodes */}
       <div className="absolute inset-0 pointer-events-none">
-        {[...Array(8)].map((_, i) => (
+        {[...Array(10)].map((_, i) => (
           <div
-            key={`ambient-${i}`}
+            key={`node-${i}`}
             className="absolute rounded-full"
             style={{
-              width: `${150 + i * 40}px`,
-              height: `${150 + i * 40}px`,
-              left: `${15 + i * 12}%`,
-              top: `${5 + i * 12}%`,
-              background: `radial-gradient(circle, ${
-                i % 3 === 0 ? 'rgba(34, 211, 238, 0.15)' : 
-                i % 3 === 1 ? 'rgba(139, 92, 246, 0.15)' : 
-                'rgba(236, 72, 153, 0.15)'
-              } 0%, transparent 60%)`,
-              animation: `ambient-drift ${15 + i * 2}s ease-in-out infinite`,
-              animationDelay: `${i * 1.5}s`,
+              width: '8px',
+              height: '8px',
+              left: `${Math.random() * 100}%`,
+              top: `${Math.random() * 100}%`,
+              background: `radial-gradient(circle, hsl(${180 + Math.random() * 60}, 80%, 70%), transparent)`,
+              animation: `node-pulse ${3 + Math.random() * 2}s ease-in-out infinite`,
+              animationDelay: `${Math.random() * 2}s`,
+              boxShadow: '0 0 8px rgba(6, 182, 212, 0.4)',
             }}
           />
         ))}
       </div>
 
-      {/* Dynamic Grid Overlay */}
-      <div className="absolute inset-0 pointer-events-none opacity-[0.08]">
-        <div className="w-full h-full" 
-             style={{
-               backgroundImage: `
-                 linear-gradient(rgba(34, 211, 238, 0.3) 1px, transparent 1px),
-                 linear-gradient(90deg, rgba(34, 211, 238, 0.3) 1px, transparent 1px)
-               `,
-               backgroundSize: '60px 60px',
-               animation: 'grid-flow 25s linear infinite'
-             }}>
-        </div>
-      </div>
-
-      {/* Flowing Energy Streams */}
+      {/* Subtle Nebula Glow */}
       <div className="absolute inset-0 pointer-events-none">
-        {[...Array(4)].map((_, i) => (
-          <div
-            key={`stream-${i}`}
-            className="absolute w-full opacity-30"
-            style={{
-              height: '2px',
-              top: `${25 + i * 15}%`,
-              background: `linear-gradient(90deg, 
-                transparent 0%, 
-                rgba(34, 211, 238, 0.6) 25%, 
-                rgba(139, 92, 246, 0.8) 50%, 
-                rgba(236, 72, 153, 0.6) 75%, 
-                transparent 100%)`,
-              animation: `energy-flow ${20 + i * 3}s linear infinite`,
-              animationDelay: `${i * 2}s`,
-            }}
-          />
-        ))}
+        <div
+          className="absolute w-full h-full opacity-10"
+          style={{
+            background: `radial-gradient(circle at 20% 30%, rgba(6, 182, 212, 0.2), transparent 70%)`,
+            animation: `nebula-glow 10s ease-in-out infinite`,
+          }}
+        />
+        <div
+          className="absolute w-full h-full opacity-10"
+          style={{
+            background: `radial-gradient(circle at 80% 70%, rgba(168, 85, 247, 0.2), transparent 70%)`,
+            animation: `nebula-glow 12s ease-in-out infinite`,
+            animationDelay: '2s',
+          }}
+        />
       </div>
 
-      {/* Main Content Container */}
-      <div className="relative z-10 flex items-center justify-center min-h-screen p-8">
-        <div className="max-w-2xl text-center">
-          {/* Enhanced VERB Logo */}
-          <div className="relative mb-16 mx-auto w-56 h-56">
-            {/* Multiple rotating rings */}
-            <div className="absolute inset-0 rounded-full border-4 border-transparent bg-gradient-to-r from-cyan-400 via-purple-500 to-pink-500 animate-spin opacity-80" style={{ animationDuration: '8s' }}>
-              <div className="absolute inset-2 rounded-full bg-slate-900/80 backdrop-blur-sm"></div>
-            </div>
-            
-            <div className="absolute inset-4 rounded-full border-2 border-transparent bg-gradient-to-r from-purple-400 via-cyan-400 to-blue-500 animate-spin opacity-60" style={{ animationDuration: '12s', animationDirection: 'reverse' }}>
-              <div className="absolute inset-1 rounded-full bg-slate-900/60"></div>
-            </div>
-            
-            {/* VERB Text with enhanced styling */}
-            <div className="absolute inset-0 flex items-center justify-center z-20">
-              <div className="text-center bg-slate-900/90 backdrop-blur-xl px-8 py-6 rounded-2xl border border-white/10 shadow-2xl">
-                <div className="text-5xl font-black bg-gradient-to-r from-cyan-400 via-blue-500 to-purple-600 bg-clip-text text-transparent animate-pulse tracking-wider mb-2">
-                  VERB
-                </div>
-                <div className="w-16 h-1 bg-gradient-to-r from-cyan-400 via-purple-500 to-pink-500 mx-auto rounded-full animate-pulse"></div>
-                <div className="text-xs text-white/60 mt-2 tracking-widest">CONNECT</div>
+      {/* Main Content - VERB Logo with Animated Background */}
+      <div className="relative z-10 max-w-lg text-center px-8">
+        <div className="relative bg-white/5 backdrop-blur-xl border border-white/10 rounded-3xl p-10 shadow-2xl transform hover:scale-105 transition-all duration-700 overflow-hidden">
+          {/* Animated Card Background */}
+          <div
+            className="absolute inset-0"
+            style={{
+              background: `radial-gradient(circle at 50% 50%, rgba(6, 182, 212, 0.15), rgba(168, 85, 247, 0.1), transparent 70%)`,
+              animation: `gradient-pulse 8s ease-in-out infinite`,
+              boxShadow: 'inset 0 0 20px rgba(6, 182, 212, 0.2)',
+            }}
+          />
+          {/* Micro-Particles */}
+          {[...Array(6)].map((_, i) => (
+            <div
+              key={`particle-${i}`}
+              className="absolute w-2 h-2 rounded-full"
+              style={{
+                background: `radial-gradient(circle, hsl(${180 + i * 30}, 80%, 70%), transparent)`,
+                top: '50%',
+                left: '50%',
+                transform: `translate(-50%, -50%) rotate(${i * 60}deg) translateX(60px)`,
+                animation: `particle-orbit ${4 + i * 0.5}s linear infinite`,
+                animationDelay: `${i * 0.3}s`,
+                boxShadow: '0 0 6px rgba(6, 182, 212, 0.3)',
+              }}
+            />
+          ))}
+          {/* Glowing Edge Effect */}
+          <div
+            className="absolute inset-0 rounded-3xl"
+            style={{
+              border: '2px solid transparent',
+              borderImage: `linear-gradient(90deg, rgba(6, 182, 212, 0.3), rgba(168, 85, 247, 0.3), transparent) 1`,
+              animation: `glow-edge 6s ease-in-out infinite`,
+            }}
+          />
+
+          <div className="relative z-10">
+            <div className="relative mb-12 mx-auto w-40 h-40">
+              <div className="absolute inset-0 rounded-full border-4 border-transparent bg-gradient-to-r from-cyan-400 via-purple-500 to-pink-500 animate-spin" style={{ animationDuration: '6s' }}>
+                <div className="absolute inset-1 rounded-full bg-slate-900"></div>
               </div>
-            </div>
-
-            {/* Enhanced pulsing rings */}
-            <div className="absolute inset-0 rounded-full border-2 border-cyan-400/30 animate-ping" style={{ animationDuration: '3s' }}></div>
-            <div className="absolute inset-3 rounded-full border border-purple-400/30 animate-ping" style={{ animationDuration: '4s', animationDelay: '0.5s' }}></div>
-            <div className="absolute inset-6 rounded-full border border-pink-400/20 animate-ping" style={{ animationDuration: '5s', animationDelay: '1s' }}></div>
-            
-            {/* Enhanced floating elements */}
-            {[...Array(8)].map((_, i) => (
-              <div
-                key={`logo-element-${i}`}
-                className="absolute"
-                style={{
-                  top: '50%',
-                  left: '50%',
-                  transform: `translate(-50%, -50%) rotate(${i * 45}deg) translateX(120px) rotate(-${i * 45}deg)`,
-                  animation: `orbit-float ${6 + i * 0.5}s ease-in-out infinite`,
-                  animationDelay: `${i * 0.4}s`,
-                }}
-              >
-                <div className={`w-8 h-6 rounded-full ${
-                  i % 3 === 0 ? 'bg-gradient-to-br from-cyan-400/80 to-blue-500/80' :
-                  i % 3 === 1 ? 'bg-gradient-to-br from-purple-400/80 to-pink-500/80' :
-                  'bg-gradient-to-br from-blue-500/80 to-cyan-400/80'
-                } shadow-lg`}>
-                  <div className="absolute -bottom-1 left-2 w-0 h-0 border-l-2 border-r-2 border-t-3 border-transparent border-t-current opacity-80"></div>
+              <div className="absolute inset-0 flex items-center justify-center z-10">
+                <div className="text-center bg-slate-900 px-4 py-2 rounded-lg">
+                  <div className="text-3xl font-black bg-gradient-to-r from-cyan-400 via-blue-500 to-purple-600 bg-clip-text text-transparent animate-pulse tracking-wider">
+                    VERB
+                  </div>
+                  <div className="w-12 h-0.5 bg-gradient-to-r from-cyan-400 to-purple-500 mx-auto mt-2 animate-pulse"></div>
                 </div>
               </div>
-            ))}
-
-            {/* Data stream visualization */}
-            {[...Array(6)].map((_, i) => (
-              <div
-                key={`data-${i}`}
-                className="absolute w-2 bg-gradient-to-t from-transparent via-cyan-400/80 to-transparent rounded-full"
-                style={{
-                  height: '80px',
-                  top: '50%',
-                  left: '50%',
-                  transform: `translate(-50%, -50%) rotate(${i * 60}deg) translateY(-60px)`,
-                  animation: `data-pulse ${3 + i * 0.3}s ease-in-out infinite`,
-                  animationDelay: `${i * 0.6}s`,
-                }}
-              />
-            ))}
-          </div>
-
-          {/* Enhanced Title and Subtitle */}
-          <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-3xl p-12 shadow-2xl hover:bg-white/10 transition-all duration-700 hover:scale-105 hover:shadow-cyan-500/20">
-            <h2 className="text-5xl font-bold mb-8 bg-gradient-to-r from-cyan-400 via-blue-500 to-purple-600 bg-clip-text text-transparent animate-pulse leading-tight">
+              <div className="absolute inset-0 rounded-full border-2 border-cyan-400/20 animate-ping" style={{ animationDuration: '2s' }}></div>
+              <div className="absolute inset-2 rounded-full border border-purple-400/20 animate-ping" style={{ animationDuration: '3s', animationDelay: '0.5s' }}></div>
+              {[...Array(6)].map((_, i) => (
+                <div
+                  key={i}
+                  className="absolute w-6 h-4 rounded-full bg-gradient-to-br from-cyan-400/60 to-blue-500/60"
+                  style={{
+                    top: '50%',
+                    left: '50%',
+                    transform: `translate(-50%, -50%) rotate(${i * 60}deg) translateX(80px) rotate(-${i * 60}deg)`,
+                    animation: `float-bubble 4s ease-in-out infinite`,
+                    animationDelay: `${i * 0.3}s`,
+                  }}
+                >
+                  <div className="absolute -bottom-1 left-1 w-0 h-0 border-l-2 border-r-2 border-t-2 border-transparent border-t-cyan-400/60"></div>
+                </div>
+              ))}
+              {[...Array(4)].map((_, i) => (
+                <div
+                  key={`stream-${i}`}
+                  className="absolute w-1 bg-gradient-to-t from-transparent via-cyan-400/60 to-transparent"
+                  style={{
+                    height: '60px',
+                    top: '50%',
+                    left: '50%',
+                    transform: `translate(-50%, -50%) rotate(${i * 90}deg) translateY(-40px)`,
+                    animation: `data-stream 2s ease-in-out infinite`,
+                    animationDelay: `${i * 0.5}s`,
+                  }}
+                ></div>
+              ))}
+            </div>
+            <h2 className="text-4xl font-bold mb-6 bg-gradient-to-r from-cyan-400 via-blue-500 to-purple-600 bg-clip-text text-transparent animate-pulse">
               {title}
             </h2>
-            <p className="text-white/90 text-xl leading-relaxed max-w-lg mx-auto">
+            <p className="text-white/80 text-lg leading-relaxed">
               {subtitle}
             </p>
           </div>
@@ -318,40 +270,53 @@ const AuthImagePattern = ({ title, subtitle }) => {
       </div>
 
       <style jsx>{`
-        @keyframes float-element {
-          0%, 100% { transform: translateY(0px) translateX(0px) rotate(0deg); }
-          25% { transform: translateY(-15px) translateX(8px) rotate(2deg); }
-          50% { transform: translateY(-8px) translateX(-8px) rotate(-1deg); }
-          75% { transform: translateY(8px) translateX(5px) rotate(1deg); }
+        @keyframes orbit-spin {
+          0% { transform: translate(-50%, -50%) rotateX(60deg) rotateZ(0deg); }
+          100% { transform: translate(-50%, -50%) rotateX(60deg) rotateZ(360deg); }
         }
-        @keyframes glow-line {
-          0%, 100% { opacity: 0.3; transform: scaleX(1) scaleY(1); }
-          50% { opacity: 0.8; transform: scaleX(1.3) scaleY(1.5); }
+        @keyframes orbit-move {
+          0% { transform: translate(-50%, -50%) rotate(0deg) translateX(100%) rotate(-0deg); }
+          100% { transform: translate(-50%, -50%) rotate(360deg) translateX(100%) rotate(-360deg); }
         }
-        @keyframes ambient-drift {
-          0%, 100% { transform: scale(1) translate(0, 0); opacity: 0.15; }
-          33% { transform: scale(1.2) translate(10px, -15px); opacity: 0.25; }
-          66% { transform: scale(0.9) translate(-8px, 10px); opacity: 0.2; }
+        @keyframes node-pulse {
+          0%, 100% { transform: scale(1); opacity: 0.75; }
+          50% { transform: scale(1.3); opacity: 1; }
         }
-        @keyframes grid-flow {
-          0% { transform: translate(0, 0); }
-          100% { transform: translate(60px, 60px); }
+        @keyframes nebula-glow {
+          0%, 100% { opacity: 0.1; transform: scale(1); }
+          50% { opacity: 0.15; transform: scale(1.1); }
         }
-        @keyframes energy-flow {
-          0% { transform: translateX(-100%); }
-          100% { transform: translateX(100%); }
+        @keyframes float-bubble {
+          0%, 100% { transform: translate(-50%, -50%) rotate(var(--angle)) translateX(80px) rotate(calc(-1 * var(--angle))) translateY(0px); }
+          50% { transform: translate(-50%, -50%) rotate(var(--angle)) translateX(80px) rotate(calc(-1 * var(--angle))) translateY(-10px); }
         }
-        @keyframes orbit-float {
-          0%, 100% { transform: translate(-50%, -50%) rotate(var(--angle, 0deg)) translateX(120px) rotate(calc(-1 * var(--angle, 0deg))) translateY(0px) scale(1); }
-          50% { transform: translate(-50%, -50%) rotate(var(--angle, 0deg)) translateX(120px) rotate(calc(-1 * var(--angle, 0deg))) translateY(-15px) scale(1.1); }
+        @keyframes data-stream {
+          0%, 100% { opacity: 0.3; height: 60px; }
+          50% { opacity: 1; height: 80px; }
         }
-        @keyframes data-pulse {
-          0%, 100% { opacity: 0.4; height: 80px; transform: translate(-50%, -50%) rotate(var(--angle, 0deg)) translateY(-60px) scaleY(1); }
-          50% { opacity: 1; height: 100px; transform: translate(-50%, -50%) rotate(var(--angle, 0deg)) translateY(-60px) scaleY(1.3); }
+        @keyframes gradient-pulse {
+          0% { background: radial-gradient(circle at 50% 50%, rgba(6, 182, 212, 0.15), rgba(168, 85, 247, 0.1), transparent 70%); }
+          50% { background: radial-gradient(circle at 50% 50%, rgba(168, 85, 247, 0.15), rgba(6, 182, 212, 0.1), transparent 70%); }
+          100% { background: radial-gradient(circle at 50% 50%, rgba(6, 182, 212, 0.15), rgba(168, 85, 247, 0.1), transparent 70%); }
+        }
+        @keyframes particle-orbit {
+          0% { transform: translate(-50%, -50%) rotate(var(--angle)) translateX(60px); }
+          100% { transform: translate(-50%, -50%) rotate(calc(var(--angle) + 360deg)) translateX(60px); }
+        }
+        @keyframes glow-edge {
+          0%, 100% { border-image: linear-gradient(90deg, rgba(6, 182, 212, 0.3), rgba(168, 85, 247, 0.3), transparent) 1; }
+          50% { border-image: linear-gradient(90deg, rgba(168, 85, 247, 0.3), rgba(6, 182, 212, 0.3), transparent) 1; }
         }
       `}</style>
     </div>
   );
 };
 
-export default AuthImagePattern;
+export default function App() {
+  return (
+    <AuthImagePattern 
+      title="Welcome to VERB" 
+      subtitle="Connect, communicate, and collaborate in the most advanced chat experience ever created. Where conversations come alive."
+    />
+  );
+}

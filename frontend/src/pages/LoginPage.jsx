@@ -19,8 +19,7 @@ const LoginPage = () => {
     login(formData);
   };
 
-
- return (
+  return (
     <div className="min-h-screen bg-slate-900 relative overflow-hidden flex items-center justify-center p-4">
       {/* Animated Background */}
       <div className="absolute inset-0 bg-gradient-to-br from-slate-900 via-purple-900/20 to-slate-900">
@@ -79,16 +78,7 @@ const LoginPage = () => {
             {/* Header with VERB Logo */}
             <div className="text-center mb-10">
               <div className="flex flex-col items-center gap-4">
-                {/* Animated Logo Container */}
-                <div className="relative">
-                  <div className="w-20 h-20 rounded-full bg-gradient-to-r from-cyan-500 via-purple-500 to-pink-500 p-0.5 animate-spin" style={{animationDuration: '3s'}}>
-                    <div className="w-full h-full rounded-full bg-slate-900 flex items-center justify-center">
-                      <MessageSquare className="w-8 h-8 text-transparent bg-gradient-to-r from-cyan-400 to-purple-400 bg-clip-text" />
-                    </div>
-                  </div>
-                  {/* Glow effect */}
-                  <div className="absolute inset-0 w-20 h-20 rounded-full bg-gradient-to-r from-cyan-500/30 via-purple-500/30 to-pink-500/30 blur-xl animate-pulse"></div>
-                </div>
+                {/* Animated Logo Container with 3D Message Icon */}
                 
                 <div>
                   <h1 className="text-4xl font-bold text-transparent bg-gradient-to-r from-cyan-400 via-purple-400 to-pink-400 bg-clip-text mb-2">
@@ -107,19 +97,19 @@ const LoginPage = () => {
                 <label className="block text-sm font-medium text-slate-300 mb-2">
                   Email
                 </label>
-                <div className="relative">
+                <div className="relative transition-all duration-200 group-hover:-translate-y-0.5">
                   <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
                     <Mail className="h-5 w-5 text-slate-500 group-focus-within:text-cyan-400 transition-colors duration-200" />
                   </div>
                   <input
                     type="email"
-                    className="w-full pl-12 pr-4 py-4 bg-slate-800/50 border border-slate-700 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-cyan-500/50 focus:border-cyan-500/50 backdrop-blur-sm transition-all duration-200"
+                    className="w-full pl-12 pr-4 py-4 bg-slate-800/50 border border-slate-700 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-cyan-500/50 focus:border-cyan-500/50 backdrop-blur-sm transition-all duration-200 group-hover:ring-2 group-hover:ring-cyan-400/30 group-hover:border-cyan-400/50"
                     placeholder="you@example.com"
                     value={formData.email}
                     onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                   />
                   {/* Input glow effect */}
-                  <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-cyan-500/10 via-purple-500/10 to-pink-500/10 opacity-0 group-focus-within:opacity-100 transition-opacity duration-300 pointer-events-none"></div>
+                  <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-cyan-500/10 via-purple-500/10 to-pink-500/10 opacity-0 group-focus-within:opacity-100 group-hover:opacity-50 transition-opacity duration-300 pointer-events-none"></div>
                 </div>
               </div>
 
@@ -128,20 +118,20 @@ const LoginPage = () => {
                 <label className="block text-sm font-medium text-slate-300 mb-2">
                   Password
                 </label>
-                <div className="relative">
+                <div className="relative transition-all duration-200 group-hover:-translate-y-0.5">
                   <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
                     <Lock className="h-5 w-5 text-slate-500 group-focus-within:text-purple-400 transition-colors duration-200" />
                   </div>
                   <input
                     type={showPassword ? "text" : "password"}
-                    className="w-full pl-12 pr-12 py-4 bg-slate-800/50 border border-slate-700 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-purple-500/50 focus:border-purple-500/50 backdrop-blur-sm transition-all duration-200"
+                    className="w-full pl-12 pr-12 py-4 bg-slate-800/50 border border-slate-700 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-purple-500/50 focus:border-purple-500/50 backdrop-blur-sm transition-all duration-200 group-hover:ring-2 group-hover:ring-purple-400/30 group-hover:border-purple-400/50"
                     placeholder="••••••••"
                     value={formData.password}
                     onChange={(e) => setFormData({ ...formData, password: e.target.value })}
                   />
                   <button
                     type="button"
-                    className="absolute inset-y-0 right-0 pr-4 flex items-center text-slate-500 hover:text-purple-400 transition-colors duration-200"
+                    className="absolute inset-y-0 right-0 pr-4 flex items-center text-slate-500 hover:text-purple-400 hover:scale-110 transition-all duration-200"
                     onClick={() => setShowPassword(!showPassword)}
                   >
                     {showPassword ? (
@@ -151,7 +141,7 @@ const LoginPage = () => {
                     )}
                   </button>
                   {/* Input glow effect */}
-                  <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-purple-500/10 via-pink-500/10 to-cyan-500/10 opacity-0 group-focus-within:opacity-100 transition-opacity duration-300 pointer-events-none"></div>
+                  <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-purple-500/10 via-pink-500/10 to-cyan-500/10 opacity-0 group-focus-within:opacity-100 group-hover:opacity-50 transition-opacity duration-300 pointer-events-none"></div>
                 </div>
               </div>
 
@@ -162,8 +152,8 @@ const LoginPage = () => {
                 className="w-full relative group"
                 onClick={handleSubmit}
               >
-                <div className="absolute inset-0 bg-gradient-to-r from-cyan-500 via-purple-500 to-pink-500 rounded-xl blur-lg opacity-60 group-hover:opacity-80 transition-opacity duration-300"></div>
-                <div className="relative bg-gradient-to-r from-cyan-500 via-purple-500 to-pink-500 text-white font-semibold py-4 px-8 rounded-xl hover:shadow-2xl hover:shadow-purple-500/25 transition-all duration-300 flex items-center justify-center gap-2">
+                <div className="absolute inset-0 bg-gradient-to-r from-cyan-500 via-purple-500 to-pink-500 rounded-xl blur-lg opacity-60 group-hover:opacity-100 group-hover:scale-105 transition-all duration-300"></div>
+                <div className="relative bg-gradient-to-r from-cyan-500 via-purple-500 to-pink-500 text-white font-semibold py-4 px-8 rounded-xl hover:shadow-2xl hover:shadow-purple-500/50 group-hover:from-cyan-400 group-hover:via-purple-400 group-hover:to-pink-400 group-hover:scale-105 transition-all duration-300 flex items-center justify-center gap-2">
                   {isLoggingIn ? (
                     <>
                       <Loader2 className="h-5 w-5 animate-spin" />
@@ -180,7 +170,7 @@ const LoginPage = () => {
             <div className="text-center mt-8">
               <p className="text-slate-400">
                 Don't have an account?{" "}
-                <a href="/signup" className="text-transparent bg-gradient-to-r from-cyan-400 to-purple-400 bg-clip-text hover:from-cyan-300 hover:to-purple-300 font-medium transition-all duration-200">
+                <a href="/signup" className="relative text-transparent bg-gradient-to-r from-cyan-400 to-purple-400 bg-clip-text hover:from-cyan-300 hover:to-purple-300 font-medium transition-all duration-200 after:content-[''] after:absolute after:bottom-0 after:left-0 after:w-0 after:h-0.5 after:bg-gradient-to-r after:from-cyan-400 after:to-purple-400 after:transition-all after:duration-300 hover:after:w-full">
                   Create account
                 </a>
               </p>
@@ -190,9 +180,9 @@ const LoginPage = () => {
 
         {/* Right Side - Branding */}
         <div className="hidden lg:flex flex-col items-center justify-center text-center p-8">
-          <div className="relative mb-8">
+          <div className="relative mb-8 group">
             {/* Large VERB Logo with multiple glow layers */}
-            <div className="relative">
+            <div className="relative transition-all duration-300 group-hover:scale-110 group-hover:rotate-6">
               <div className="w-48 h-48 rounded-full bg-gradient-to-r from-cyan-500 via-purple-500 to-pink-500 p-1 animate-pulse">
                 <div className="w-full h-full rounded-full bg-slate-900 flex items-center justify-center">
                   <span className="text-6xl font-bold text-transparent bg-gradient-to-r from-cyan-400 via-purple-400 to-pink-400 bg-clip-text">
@@ -201,8 +191,8 @@ const LoginPage = () => {
                 </div>
               </div>
               {/* Multiple glow layers */}
-              <div className="absolute inset-0 w-48 h-48 rounded-full bg-gradient-to-r from-cyan-500/20 via-purple-500/20 to-pink-500/20 blur-3xl animate-pulse" style={{animationDelay: '0.5s'}}></div>
-              <div className="absolute inset-0 w-48 h-48 rounded-full bg-gradient-to-r from-pink-500/15 via-cyan-500/15 to-purple-500/15 blur-2xl animate-pulse" style={{animationDelay: '1s'}}></div>
+              <div className="absolute inset-0 w-48 h-48 rounded-full bg-gradient-to-r from-cyan-500/20 via-purple-500/20 to-pink-500/20 blur-3xl animate-pulse transition-all duration-300 group-hover:from-cyan-500/30 group-hover:via-purple-500/30 group-hover:to-pink-500/30 group-hover:blur-4xl" style={{animationDelay: '0.5s'}}></div>
+              <div className="absolute inset-0 w-48 h-48 rounded-full bg-gradient-to-r from-pink-500/15 via-cyan-500/15 to-purple-500/15 blur-2xl animate-pulse transition-all duration-300 group-hover:from-pink-500/25 group-hover:via-cyan-500/25 group-hover:to-purple-500/25 group-hover:blur-3xl" style={{animationDelay: '1s'}}></div>
             </div>
           </div>
           

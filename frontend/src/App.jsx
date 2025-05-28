@@ -49,7 +49,7 @@ if (isCheckingAuth) {
 
   return (
    <div data-theme={theme}>
-      <Navbar />
+       {location.pathname !== "/login" && location.pathname !== "/signup" && <Navbar />}
 
       <Routes>
         <Route path="/" element={authUser ? <HomePage /> : <Navigate to="/login" state={{ from: location }} replace />} />
